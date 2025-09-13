@@ -37,7 +37,7 @@ jobs:
       - name: Release
         if: env.releaseID != null
         run: |
-          $uploadPath = "./dist/dap.exe"
+          $uploadPath = "./dist/mkvutils.exe"
           $uri = "https://uploads.github.com/repos/$Env:GITHUB_REPOSITORY/releases/${{ env.releaseID }}/assets?name=${{ env.fileName }}.exe"
           $headers = @{"Content-Type"="application/x-msdownload"; "Authorization"="token ${{ secrets.GH_TOKEN }}"}
           Invoke-WebRequest -Uri $uri -Method POST -Header $headers -InFile $uploadPath
