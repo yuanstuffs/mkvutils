@@ -32,7 +32,7 @@ jobs:
         
       - name: Compile to exe
         run: |
-          python -m pyinstaller ./main.spec
+          pyinstaller ./main.spec
     
       - name: Release
         if: env.releaseID != null
