@@ -1,0 +1,44 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  release:
+    types: [prereleased]
+
+jobs:
+  build:
+    name: Build
+    runs-on: windows-latest
+    steps:
+      - name: Build
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.11'
+          architecture: 'x64'
+        
+      - name: Set release name
+        run: |
+          $RELEASE = cat $Env:GITHUB_EVENT_PATH | jq --raw-output .release.id
+          echo "releaseID=$RELEASE" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
+          echo "fileName=dap-${{ github.event.release.tag_name }}-win64" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
+        
+      - name: Install python dependencies
+        run: |
+          python -m pip install -U pip
+          python -m pip install pyinstaller
+        
+      - name: Compile to exe
+        run: |
+          python -m pyinstaller ./main.spec
+    
+      - name: Release
+        if: env.releaseID != null
+        run: |
+          $uploadPath = "./dist/dap.exe"
+          $uri = "https://uploads.github.com/repos/$Env:GITHUB_REPOSITORY/releases/${{ env.releaseID }}/assets?name=${{ env.fileName }}.exe"
+          $headers = @{"Content-Type"="application/x-msdownload"; "Authorization"="token ${{ secrets.GH_TOKEN }}"}
+          Invoke-WebRequest -Uri $uri -Method POST -Header $headers -InFile $uploadPath
+    
