@@ -23,7 +23,7 @@ jobs:
         run: |
           $RELEASE = cat $Env:GITHUB_EVENT_PATH | jq --raw-output .release.id
           echo "releaseID=$RELEASE" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
-          echo "fileName=dap-${{ github.event.release.tag_name }}-win64" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
+          echo "fileName=mkvutils-${{ github.event.release.tag_name }}-win64" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
         
       - name: Install python dependencies
         run: |
