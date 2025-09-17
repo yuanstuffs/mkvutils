@@ -2,7 +2,7 @@ import subprocess
 
 from os import path, makedirs
 from constants import MKVTools
-from markup import Color, colorize
+from colorize import Color, colorize
 
 
 def extract_subs(input_file: str, episode_tag: str, track_id: int) -> str:

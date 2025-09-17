@@ -3,7 +3,7 @@ import subprocess
 from os import makedirs, path
 from typing import Any, List, Literal, Optional
 from constants import MKVTools
-from markup import Color, colorize
+from colorize import Color, colorize
 
 
 def process_mkv(
@@ -25,15 +25,23 @@ def process_mkv(
     # Step 1: merge keeping only video/audio, add English subtitles
     # (-S removes all subtitles from the source)
     if action_type == "old":
+        subtitle_file: str
         # Subtitle file in ./subs/
         subtitle_file = path.join(
             path.join(path.dirname(input_file), "subs"), f"{episode_tag}.ass"
         )
 
         if not path.isfile(subtitle_file):
-            raise FileNotFoundError(
-                f"❌ Subtitle file not found: {colorize(subtitle_file, Color.Yellow)}"
+            alternative_filename = path.join(
+                path.join(path.dirname(input_file), "subs"), f"{input_file}.ass"
             )
+
+            if not path.isfile(alternative_filename):
+                raise FileNotFoundError(
+                    f"❌ Subtitle file not found: {colorize(subtitle_file, Color.Yellow)}"
+                )
+
+            subtitle_file = alternative_filename
 
         final_command = [
             MKVTools.Merge,

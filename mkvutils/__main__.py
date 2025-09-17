@@ -2,7 +2,7 @@ import sys
 import os
 
 from episode import extract_episode_tag
-from markup import Color, colorize, enable_ansi_on_windows
+from colorize import Color, colorize, enable_ansi_on_windows
 from parser import get_args
 from process import process_mkv
 from subtitles import extract_subs, process_sub

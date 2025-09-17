@@ -18,4 +18,5 @@ def extract_episode_tag(filename: str) -> str:
     if match:
         return f"E{match.group(1)}"  # Normalize as E01, E02, etc.
 
-    raise ValueError(f"❌ No episode tag found in filename: {filename}")
+    # raise ValueError(f"❌ No episode tag found in filename: {filename}")
+    return filename
