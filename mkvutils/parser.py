@@ -9,8 +9,10 @@ class Args:
     A container for the command-line arguments.
     """
 
+    all: bool
     file: str
     fontsize: int
+    keep_subs: bool
     keep_trackname: bool
     trackid: int
     type: Literal["old", "new"]
@@ -21,9 +23,21 @@ def get_args() -> Args:
     Parses command-line arguments and returns a typed object.
     """
     parser = argparse.ArgumentParser(description="Process MKV and subtitles.")
-    parser.add_argument("file", help="Input MKV file")
+    parser.add_argument(
+        "file", nargs="?", help="Input MKV file (ignored if --all is used)"
+    )
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Process all MKV files in the current directory",
+    )
     parser.add_argument(
         "--fontsize", type=int, default=18, help="Font size for subtitles (default: 18)"
+    )
+    parser.add_argument(
+        "--keep-subs",
+        action="store_true",
+        help="Whether to keep the extracted subtitles",
     )
     parser.add_argument(
         "--keep-trackname",
