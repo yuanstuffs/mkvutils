@@ -26,14 +26,12 @@ def process_mkv(
     # (-S removes all subtitles from the source)
     if action_type == "old":
         subtitle_file: str
-        # Subtitle file in ./subs/
-        subtitle_file = path.join(
-            path.join(path.dirname(input_file), "subs"), f"{episode_tag}.ass"
-        )
+        # Subtitle file in ./out/subs/
+        subtitle_file = path.join(path.join(baseout_dir, "subs"), f"{episode_tag}.ass")
 
         if not path.isfile(subtitle_file):
             alternative_filename = path.join(
-                path.join(path.dirname(input_file), "subs"), f"{input_file}.ass"
+                path.join(baseout_dir, "subs"), f"{input_file}.ass"
             )
 
             if not path.isfile(alternative_filename):

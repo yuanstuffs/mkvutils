@@ -6,8 +6,8 @@ from colorize import Color, colorize
 
 
 def extract_subs(input_file: str, episode_tag: str, track_id: int) -> str:
-    """Extracts subs from MKV → ./subs/SxxExx.ass"""
-    basedir = path.join(path.dirname(input_file), "subs")
+    """Extracts subs from MKV → ./out/subs/SxxExx.ass"""
+    basedir = path.join(path.dirname(input_file), "out", "subs")
     makedirs(basedir, exist_ok=True)
     output_file = path.join(basedir, f"{episode_tag}.ass")
 
