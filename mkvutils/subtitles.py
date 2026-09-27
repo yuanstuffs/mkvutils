@@ -5,9 +5,11 @@ from constants import MKVTools
 from colorize import Color, colorize
 
 
-def extract_subs(input_file: str, episode_tag: str, track_id: int) -> str:
-    """Extracts subs from MKV → ./out/subs.SxxExx.ass"""
-    basedir = path.join(path.dirname(input_file), "out")
+def extract_subs(
+    input_file: str, episode_tag: str, track_id: int, output_dir: str | None = None
+) -> str:
+    """Extracts subs from MKV → <out_dir>/subs.SxxExx.ass"""
+    basedir = output_dir if output_dir else path.join(path.dirname(input_file), "out")
     makedirs(basedir, exist_ok=True)
     output_file = path.join(basedir, f"subs.{episode_tag}.ass")
 

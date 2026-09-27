@@ -4,64 +4,67 @@ from os import makedirs, path, remove
 from typing import Any, List, Literal, Optional
 from constants import MKVTools
 from colorize import Color, colorize
+from tracks import find_default_audio_track_id
+from fsutils import unique_output_path
 
 
 def process_mkv(
     input_file: str,
-    track_id: int = 2,
+    track_id: int,
     action_type: Optional[Literal["old", "new"]] = None,
     episode_tag: Optional[str] = None,
     keep_subs: bool = False,
+    only_default_audio: bool = False,
+    output_dir: Optional[str] = None,
+    output_filename: Optional[str] = None,
+    force: bool = False,
 ):
     if not path.isfile(input_file):
         raise FileNotFoundError(f"❌ File not found: {input_file}")
 
-    # Output filename in ./out/
-    baseout_dir = path.join(path.dirname(input_file), "out")
+    baseout_dir = (
+        output_dir if output_dir else path.join(path.dirname(input_file), "out")
+    )
     makedirs(baseout_dir, exist_ok=True)
-    output_file = path.join(baseout_dir, path.basename(input_file))
+
+    target_filename = output_filename if output_filename else path.basename(input_file)
+
+    if force:
+        output_file = path.join(baseout_dir, target_filename)
+        if path.isfile(output_file):
+            print(
+                colorize(f"⚠️  Overwriting existing file: {output_file}", Color.Yellow)
+            )
+    else:
+        output_file = unique_output_path(baseout_dir, target_filename)
+
     subtitle_file: str | None = None
 
-    final_command: List[Any] = []
+    final_command: List[Any] = [MKVTools.Merge, "-o", output_file]
 
-    # Step 1: merge keeping only video/audio, add English subtitles
-    # (-S removes all subtitles from the source)
+    if only_default_audio:
+        default_audio_id = find_default_audio_track_id(input_file)
+        if default_audio_id is not None:
+            final_command += ["-a", str(default_audio_id)]
+
     if action_type == "old":
-        # Subtitle file in ./out/subs.SxxExx.ass
         subtitle_file = path.join(baseout_dir, f"subs.{episode_tag}.ass")
 
         if not path.isfile(subtitle_file):
             alternative_filename = path.join(baseout_dir, f"subs.{input_file}.ass")
-
             if not path.isfile(alternative_filename):
                 raise FileNotFoundError(
                     f"❌ Subtitle file not found: {colorize(subtitle_file, Color.Yellow)}"
                 )
-
             subtitle_file = alternative_filename
 
-        final_command = [
-            MKVTools.Merge,
-            "-o",
-            output_file,
-            "-S",
-            input_file,
-            subtitle_file,
-        ]
+        final_command += ["-S", input_file, subtitle_file]
     else:
-        final_command = [
-            MKVTools.Merge,
-            "-o",
-            output_file,
-            "-s",
-            str(track_id),
-            input_file,
-        ]
+        final_command += ["-s", str(track_id), input_file]
 
     print(f"👉 Running merge: {colorize(' '.join(final_command), Color.Yellow)}")
     subprocess.run(final_command, check=True)
 
-    # Step 2: ensure English track metadata is set correctly
     cmd_edit = [
         MKVTools.ProPedit,
         output_file,

@@ -12,9 +12,12 @@ class Args:
     all: bool
     file: str
     fontsize: int
+    force: bool
     keep_subs: bool
     keep_trackname: bool
-    trackid: int
+    only_default_audio: bool
+    out: str | None
+    trackid: int | None
     type: Literal["old", "new"]
 
 
@@ -35,6 +38,11 @@ def get_args() -> Args:
         "--fontsize", type=int, default=18, help="Font size for subtitles (default: 18)"
     )
     parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Overwrite the output file if it already exists, instead of appending -1, -2, etc.",
+    )
+    parser.add_argument(
         "--keep-subs",
         action="store_true",
         help="Whether to keep the extracted subtitles",
@@ -44,7 +52,28 @@ def get_args() -> Args:
         action="store_true",
         help="Whether to keep the original track name",
     )
-    parser.add_argument("--trackid", type=int, default=2, help="Track ID (default: 2)")
+    parser.add_argument(
+        "--only-default-audio",
+        action="store_true",
+        help="If the source has multiple audio tracks, keep only the one flagged as default",
+    )
+    parser.add_argument(
+        "--out",
+        type=str,
+        default=None,
+        help=(
+            "Where to write output. A directory (e.g. '.', './finished/') writes files there "
+            "with their original names. A path with a filename+extension (e.g. './a/a.mkv') "
+            "writes the single output file there — only valid without --all. "
+            "If omitted, writes to an 'out' subdirectory next to the input file."
+        ),
+    )
+    parser.add_argument(
+        "--trackid",
+        type=int,
+        default=None,  # was: default=2
+        help="Subtitle track ID to keep (default: auto-detect English subtitle track)",
+    )
     parser.add_argument(
         "--type",
         type=str,
