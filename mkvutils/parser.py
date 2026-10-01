@@ -11,6 +11,7 @@ class Args:
 
     all: bool
     file: str
+    fix_subs: bool
     fontsize: int
     force: bool
     keep_subs: bool
@@ -18,7 +19,6 @@ class Args:
     only_default_audio: bool
     out: str | None
     trackid: int | None
-    type: Literal["old", "new"]
 
 
 def get_args() -> Args:
@@ -33,6 +33,15 @@ def get_args() -> Args:
         "--all",
         action="store_true",
         help="Process all MKV files in the current directory",
+    )
+    parser.add_argument(
+        "--fix-subs",
+        action="store_true",
+        help=(
+            "Extract the subtitle track and fix its font size/style (converting SRT to "
+            "ASS first if needed), then re-mux it. Without this flag, the existing "
+            "subtitle track is kept exactly as-is via --trackid."
+        ),
     )
     parser.add_argument(
         "--fontsize", type=int, default=18, help="Font size for subtitles (default: 18)"
@@ -73,13 +82,6 @@ def get_args() -> Args:
         type=int,
         default=None,  # was: default=2
         help="Subtitle track ID to keep (default: auto-detect English subtitle track)",
-    )
-    parser.add_argument(
-        "--type",
-        type=str,
-        choices=["old", "new"],
-        default="new",
-        help="Type of the mkv video. (default: new)",
     )
 
     namespace = parser.parse_args()

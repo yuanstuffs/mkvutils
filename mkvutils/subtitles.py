@@ -23,22 +23,26 @@ def extract_subs(
 
 
 # Not exported
-def fix_style_line(line: str, fontsize: int) -> str:
+def fix_style_line(line: str, fontsize: int, outline: int = 1, shadow: int = 0) -> str:
     parts = line.split(",")
     if len(parts) < 23:
-        return line  # not a valid style line
+        return line
 
-    # print(dict(enumerate(parts)))
-    # Force font size = 18
     print("File original fontsize: {}".format(colorize(parts[2], Color.Green)))
     parts[2] = str(fontsize)
     print("Changed fontsize: {}".format(colorize(parts[2], Color.Green)))
-    parts[15] = "1"
-    # Force outline = 0 (index 16)
-    parts[16] = "2"
-    # Force shadow = 0 (index 17)
-    parts[17] = "0"
-    parts[18] = "2"
+
+    parts[15] = "1"  # BorderStyle
+
+    print("File original outline: {}".format(colorize(parts[16], Color.Green)))
+    parts[16] = str(outline)  # was hardcoded "2"
+    print("Changed outline: {}".format(colorize(parts[16], Color.Green)))
+
+    print("File original shadow: {}".format(colorize(parts[17], Color.Green)))
+    parts[17] = str(shadow)
+    print("Changed shadow: {}".format(colorize(parts[17], Color.Green)))
+
+    parts[18] = "2"  # Alignment
 
     return ",".join(parts)
 
@@ -50,6 +54,16 @@ def process_sub(input_file: str, fontsize: int):
 
     with open(input_file, "r", encoding="utf-8") as f:
         lines = f.readlines()
+
+    style_lines_found = sum(1 for l in lines if l.startswith("Style:"))
+    if style_lines_found == 0:
+        print(
+            colorize(
+                f"⚠️  No 'Style:' lines found in {input_file} — nothing to edit.",
+                Color.Yellow,
+            )
+        )
+        return
 
     fixed_lines = []
     for line in lines:

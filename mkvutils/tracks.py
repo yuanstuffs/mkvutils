@@ -73,3 +73,12 @@ def find_default_audio_track_id(input_file: str) -> Optional[int]:
         )
     )
     return None
+
+
+def get_track_codec(input_file: str, track_id: int) -> Optional[str]:
+    """Returns the codec_id (e.g. 'S_TEXT/ASS', 'S_TEXT/UTF8') for a given track ID."""
+    info = identify_tracks(input_file)
+    for track in info.get("tracks", []):
+        if track.get("id") == track_id:
+            return track.get("properties", {}).get("codec_id")
+    return None

@@ -11,13 +11,13 @@ from fsutils import unique_output_path
 def process_mkv(
     input_file: str,
     track_id: int,
-    action_type: Optional[Literal["old", "new"]] = None,
-    episode_tag: Optional[str] = None,
+    fix_subs: bool = False,
     keep_subs: bool = False,
     only_default_audio: bool = False,
     output_dir: Optional[str] = None,
     output_filename: Optional[str] = None,
     force: bool = False,
+    subtitle_file: Optional[str] = None,
 ):
     if not path.isfile(input_file):
         raise FileNotFoundError(f"❌ File not found: {input_file}")
@@ -38,8 +38,6 @@ def process_mkv(
     else:
         output_file = unique_output_path(baseout_dir, target_filename)
 
-    subtitle_file: str | None = None
-
     final_command: List[Any] = [MKVTools.Merge, "-o", output_file]
 
     if only_default_audio:
@@ -47,17 +45,11 @@ def process_mkv(
         if default_audio_id is not None:
             final_command += ["-a", str(default_audio_id)]
 
-    if action_type == "old":
-        subtitle_file = path.join(baseout_dir, f"subs.{episode_tag}.ass")
-
-        if not path.isfile(subtitle_file):
-            alternative_filename = path.join(baseout_dir, f"subs.{input_file}.ass")
-            if not path.isfile(alternative_filename):
-                raise FileNotFoundError(
-                    f"❌ Subtitle file not found: {colorize(subtitle_file, Color.Yellow)}"
-                )
-            subtitle_file = alternative_filename
-
+    if fix_subs:
+        if subtitle_file is None or not path.isfile(subtitle_file):
+            raise FileNotFoundError(
+                f"❌ Subtitle file not found: {colorize(str(subtitle_file), Color.Yellow)}"
+            )
         final_command += ["-S", input_file, subtitle_file]
     else:
         final_command += ["-s", str(track_id), input_file]
