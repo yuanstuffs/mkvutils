@@ -1,7 +1,7 @@
 import subprocess
 
-from os import makedirs, path, remove
-from typing import Any, List, Literal, Optional
+from os import makedirs, path, remove, replace as os_replace
+from typing import Any, List, Optional
 from constants import MKVTools
 from colorize import Color, colorize
 from tracks import find_default_audio_track_id
@@ -38,6 +38,22 @@ def process_mkv(
     else:
         output_file = unique_output_path(baseout_dir, target_filename)
 
+    # detect when the resolved output path is the same file as the input.
+    # mkvmerge can't safely read from and write to the same path at once —
+    # mux to a temp file instead, then move it into place once done.
+    writing_over_source = path.normcase(path.abspath(output_file)) == path.normcase(
+        path.abspath(input_file)
+    )
+    final_output_file = output_file
+    if writing_over_source:
+        output_file = output_file + ".tmp"
+        print(
+            colorize(
+                f"⚠️  Output path matches input path — muxing to a temporary file first: {output_file}",
+                Color.Yellow,
+            )
+        )
+
     final_command: List[Any] = [MKVTools.Merge, "-o", output_file]
 
     if only_default_audio:
@@ -71,6 +87,12 @@ def process_mkv(
     ]
     print(f"👉 Running track edit: {colorize(' '.join(cmd_edit), Color.Yellow)}")
     subprocess.run(cmd_edit, check=True)
+
+    # now that mkvmerge/mkvpropedit are done reading the original file,
+    # it's safe to replace it with the muxed result.
+    if writing_over_source:
+        os_replace(output_file, final_output_file)
+        output_file = final_output_file
 
     print(f"✅ Final file: {colorize(output_file, Color.Yellow)}")
 

@@ -12,6 +12,8 @@ def identify_tracks(input_file: str) -> dict:
         [MKVTools.Merge, "-J", input_file],
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",  # don't crash on any future stray byte, just substitute
         check=True,
     )
     return json.loads(result.stdout)
